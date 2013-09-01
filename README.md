@@ -6,6 +6,8 @@ instruments available for trading or a quote for a specific instrument.
 
 Usage:
    fxada_cli [instrument]
+or
+   fxada_cli candles [timeframe instrument]
 
 If fxada_cli is called without 'instrument' then a list of
 available instruments is shown.

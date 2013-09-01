@@ -66,8 +66,45 @@ begin
             "Halted: " &
             Boolean'Image (Q.Halted));
       end;
+   elsif Ada.Command_Line.Argument_Count = 3
+     and then Ada.Command_Line.Argument (1) = "candles"
+   then
+      declare
+         Sticks : constant Oanda_API.Candlestick_Array :=
+           Oanda_API.Get_History
+              (Instrument    =>
+                  To_Bounded_String (Ada.Command_Line.Argument (3)),
+               Granularity   =>
+                  Oanda_API.Granularity_T'Value
+                    (Ada.Command_Line.Argument (2)),
+               Count         => 10,
+               Start_Time    => No_Time,
+               End_Time      => No_Time,
+               Candle_Format => Midpoint,
+               Include_First => True);
+      begin
+         for I in Sticks'Range loop
+            Put_Line
+              ("Open: " &
+                 Rate'Image (Sticks (I).Open_Mid) &
+                 Latin_1.HT &
+               "High: " &
+                 Rate'Image (Sticks (I).High_Mid) &
+                 Latin_1.HT &
+               "Low: " &
+                 Rate'Image (Sticks (I).Low_Mid) &
+                 Latin_1.HT &
+               "Close: " &
+                 Rate'Image (Sticks (I).Close_Mid) &
+                 Latin_1.HT &
+               " Time: " &
+               To_String (Sticks (I).Time));
+         end loop;
+      end;
    else
       Ada.Text_IO.Put_Line ("Usage:");
       Ada.Text_IO.Put_Line ("   fxada_cli [instrument]");
+      Ada.Text_IO.Put_Line ("or");
+      Ada.Text_IO.Put_Line ("   fxada_cli candles [timeframe instrument]");
    end if;
 end fxAda_CLI;
