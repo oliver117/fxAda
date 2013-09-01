@@ -40,7 +40,7 @@ begin
               ("Identifier: " &
                To_String (Instruments (I).Identifier) &
                Latin_1.HT &
-               "Display Name:" &
+               "Display Name: " &
                To_String (Instruments (I).Display_Name));
          end loop;
       end;
