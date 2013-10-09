@@ -44,7 +44,7 @@ begin
                To_String (Instruments (I).Display_Name));
          end loop;
       end;
-   elsif Ada.Command_Line.Argument_Count = 1 then
+   elsif Ada.Command_Line.Argument_Count = 1 and then Ada.Command_Line.Argument (1) /= "help" then
       declare
          Instr : constant Instrument_Identifier :=
            To_Bounded_String (Ada.Command_Line.Argument (1));
@@ -61,7 +61,7 @@ begin
             Rate'Image (Q.Ask) &
             Latin_1.HT &
             "Time: " &
-            To_String (Q.Time) &
+            To_RFC3339 (Q.Time) &
             Latin_1.HT &
             "Halted: " &
             Boolean'Image (Q.Halted));
@@ -98,7 +98,7 @@ begin
                  Rate'Image (Sticks (I).Close_Mid) &
                  Latin_1.HT &
                " Time: " &
-               To_String (Sticks (I).Time));
+                 To_RFC3339 (Sticks (I).Time));
          end loop;
       end;
    else
