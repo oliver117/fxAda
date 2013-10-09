@@ -19,7 +19,8 @@
 --  TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE
 --  SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-with Ada.Characters.Latin_1; use Ada.Characters;
+with Ada.Calendar.Formatting;
+with Ada.Characters.Latin_1;  use Ada.Characters;
 with Ada.Command_Line;
 with Ada.Text_IO;
 
@@ -44,7 +45,9 @@ begin
                To_String (Instruments (I).Display_Name));
          end loop;
       end;
-   elsif Ada.Command_Line.Argument_Count = 1 and then Ada.Command_Line.Argument (1) /= "help" then
+   elsif Ada.Command_Line.Argument_Count = 1
+     and then Ada.Command_Line.Argument (1) /= "help"
+   then
       declare
          Instr : constant Instrument_Identifier :=
            To_Bounded_String (Ada.Command_Line.Argument (1));
@@ -61,7 +64,7 @@ begin
             Rate'Image (Q.Ask) &
             Latin_1.HT &
             "Time: " &
-            To_RFC3339 (Q.Time) &
+            Ada.Calendar.Formatting.Image (Q.Time) &
             Latin_1.HT &
             "Halted: " &
             Boolean'Image (Q.Halted));
@@ -80,25 +83,24 @@ begin
                Count         => 10,
                Start_Time    => No_Time,
                End_Time      => No_Time,
-               Candle_Format => Midpoint,
-               Include_First => True);
+               Candle_Format => Midpoint);
       begin
          for I in Sticks'Range loop
             Put_Line
               ("Open: " &
-                 Rate'Image (Sticks (I).Open_Mid) &
-                 Latin_1.HT &
+               Rate'Image (Sticks (I).Open_Mid) &
+               Latin_1.HT &
                "High: " &
-                 Rate'Image (Sticks (I).High_Mid) &
-                 Latin_1.HT &
+               Rate'Image (Sticks (I).High_Mid) &
+               Latin_1.HT &
                "Low: " &
-                 Rate'Image (Sticks (I).Low_Mid) &
-                 Latin_1.HT &
+               Rate'Image (Sticks (I).Low_Mid) &
+               Latin_1.HT &
                "Close: " &
-                 Rate'Image (Sticks (I).Close_Mid) &
-                 Latin_1.HT &
+               Rate'Image (Sticks (I).Close_Mid) &
+               Latin_1.HT &
                " Time: " &
-                 To_RFC3339 (Sticks (I).Time));
+               Ada.Calendar.Formatting.Image (Sticks (I).Time));
          end loop;
       end;
    else
