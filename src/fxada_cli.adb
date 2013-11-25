@@ -22,19 +22,21 @@
 with Ada.Calendar.Formatting;
 with Ada.Characters.Latin_1;  use Ada.Characters;
 with Ada.Command_Line;
+with Ada.Strings.Unbounded;
 with Ada.Text_IO;
 
 with Oanda_API;
+with Oanda_API.Rates;
 
 procedure fxAda_CLI is
    use Ada.Text_IO;
    use Oanda_API;
-   use Oanda_API.Bounded_Strings;
+
 begin
 
    if Ada.Command_Line.Argument_Count = 0 then
       declare
-         Instruments : constant Instrument_Array := Get_Instruments;
+         Instruments : constant Instrument_Array := Rates.Get_Instruments (Oanda_API.Test_Account);
       begin
          for I in Instruments'Range loop
             Put_Line
@@ -42,16 +44,17 @@ begin
                To_String (Instruments (I).Identifier) &
                Latin_1.HT &
                "Display Name: " &
-               To_String (Instruments (I).Display_Name));
+               Ada.Strings.Unbounded.To_String (Instruments (I).Display_Name));
          end loop;
       end;
    elsif Ada.Command_Line.Argument_Count = 1
      and then Ada.Command_Line.Argument (1) /= "help"
    then
       declare
-         Instr : constant Instrument_Identifier :=
-           To_Bounded_String (Ada.Command_Line.Argument (1));
-         Q     : constant Quote                 := Get_Quote (Instr);
+         Instr_Ident : constant Instrument_Identifier :=
+           To_Identifier (Ada.Command_Line.Argument (1));
+         Instr : constant Instrument := (Identifier => Instr_Ident, others => <>);
+         Q : constant Rates.Quote := Rates.Get_Quote (Instr);
       begin
          Put_Line
            ("Instrument: " &
@@ -73,17 +76,17 @@ begin
      and then Ada.Command_Line.Argument (1) = "candles"
    then
       declare
-         Sticks : constant Oanda_API.Candlestick_Array :=
-           Oanda_API.Get_History
+         Sticks : constant Rates.Candlestick_Array :=
+           Rates.Get_History
               (Instrument    =>
-                  To_Bounded_String (Ada.Command_Line.Argument (3)),
+                  To_Identifier (Ada.Command_Line.Argument (3)),
                Granularity   =>
-                  Oanda_API.Granularity_T'Value
+                  Rates.Granularity_T'Value
                     (Ada.Command_Line.Argument (2)),
                Count         => 10,
                Start_Time    => No_Time,
                End_Time      => No_Time,
-               Candle_Format => Midpoint);
+               Candle_Format => Rates.Midpoint);
       begin
          for I in Sticks'Range loop
             Put_Line

@@ -1,0 +1,41 @@
+with Oanda_API.Rates; use Oanda_API;
+
+package fxAda is
+
+   function Has_Quote (Instr : in Instrument) return Boolean;
+   function Quote (Instr : in Instrument) return Rates.Quote;
+   procedure Wait;
+
+   No_Quote : exception;
+
+   procedure Start (Interval : in Duration; Instruments : in Instrument_Array);
+   procedure Stop;
+
+private
+   protected type Quote_Storage_T is
+      -- user operations
+      function Has_Quote (Instr : in Instrument) return Boolean;
+      function Quote (Instr : in Instrument) return Rates.Quote;
+      entry Wait;
+
+      -- package operations
+      entry Clear;
+      entry Update (Instr : in Instrument; Q : in Rates.Quote);
+      entry Update (Q : in Rates.Quote_Array);
+   private
+      entry Reset_Fresh;
+
+      Quotes : Rates.Quote_Maps.Map := Rates.Quote_Maps.Empty_Map;
+      Fresh : Boolean := False;
+   end Quote_Storage_T;
+
+   Quote_Storage : Quote_Storage_T;
+
+   task type Quote_Polling_Task is
+      entry Start (Interval : in Duration; Instruments : in Instrument_Array);
+      entry Stop;
+   end Quote_Polling_Task;
+
+   Quote_Poller : Quote_Polling_Task;
+
+end fxAda;
