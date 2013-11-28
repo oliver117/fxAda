@@ -2,7 +2,7 @@ with Ada.Text_IO;
 
 with Ada.Strings.Unbounded;
 
-package body fxAda is
+package body fxAda.Rates is
 
    use Ada.Strings.Unbounded;
 
@@ -10,16 +10,16 @@ package body fxAda is
    -- Has_Quote --
    ---------------
 
-   function Has_Quote (Instr : in Instrument) return Boolean is
-      (Quote_Storage.Has_Quote (Instr));
+   function Has_Quote (Instrument : in Instrument_T) return Boolean is
+      (Quote_Storage.Has_Quote (Instrument));
 
 
    -----------
    -- Quote --
    -----------
 
-   function Quote (Instr : in Instrument) return Rates.Quote is
-      (Quote_Storage.Quote (Instr));
+   function Quote (Instrument : in Instrument_T) return Oanda_API.Rates.Quote is
+      (Quote_Storage.Quote (Instrument));
 
    ----------
    -- Wait --
@@ -59,19 +59,19 @@ package body fxAda is
       -- Has_Quote --
       ---------------
 
-      function Has_Quote (Instr: in Instrument) return Boolean is
-        (Rates.Quote_Maps.Contains (Quotes, Instr.Identifier));
+      function Has_Quote (Instrument : in Instrument_T) return Boolean is
+        (Oanda_API.Rates.Quote_Maps.Contains (Quotes, Instrument));
 
       -----------
       -- Quote --
       -----------
 
-      function Quote (Instr : in Instrument) return Rates.Quote is
+      function Quote (Instrument : in Instrument_T) return Oanda_API.Rates.Quote is
       begin
-         return Quotes.Element (Instr.Identifier);
+         return Quotes.Element (Instrument);
       exception
          when Constraint_Error =>
-            raise No_Quote with "There is no quote available for " & To_String (Instr.Display_Name) & '.';
+            raise No_Quote with "There is no quote available for " & To_String (Instrument) & '.';
       end Quote;
 
       ----------
@@ -100,9 +100,9 @@ package body fxAda is
       -- Update --
       ------------
 
-      entry Update (Instr : in Instrument; Q : in Rates.Quote) when True is
+      entry Update (Instrument : in Instrument_T; Q : in Oanda_API.Rates.Quote) when True is
       begin
-         Quotes.Include (Instr.Identifier, Q);
+         Quotes.Include (Instrument, Q);
          Fresh := True;
 
          if Wait'Count > 0 then
@@ -115,7 +115,7 @@ package body fxAda is
       -- Update --
       ------------
 
-      entry Update (Q : in Rates.Quote_Array) when True is
+      entry Update (Q : in Oanda_API.Rates.Quote_Array) when True is
       begin
          for I in Q'Range loop
             Quotes.Include (Q (I).Instrument, Q (I));
@@ -145,7 +145,7 @@ package body fxAda is
    task body Quote_Polling_Task is
 
       Poll_Interval : Duration := 1.0;
-      Polled_Instruments : Instrument_Array (0 .. 1);
+      Polled_Instruments : Instrument_Array (0 .. 0);
 
       Started : Boolean := False;
    begin
@@ -153,7 +153,6 @@ package body fxAda is
          if not Started then
             select
                accept Start (Interval : in Duration; Instruments : in Instrument_Array) do
-                  Ada.Text_IO.Put_Line ("Starting");
                   Poll_Interval := Interval;
                   Polled_Instruments := Instruments;
                   Started := True;
@@ -162,17 +161,16 @@ package body fxAda is
                terminate;
             end select;
          else
-            Ada.Text_IO.Put_Line ("Started");
             select
                accept Stop  do
                   Started := False;
                end Stop;
             or
                delay Poll_Interval;
-               Quote_Storage.Update (Rates.Get_Quotes (Polled_Instruments));
+               Quote_Storage.Update (Oanda_API.Rates.Get_Quotes (Polled_Instruments));
             end select;
          end if;
       end loop;
    end Quote_Polling_Task;
 
-end fxAda;
+end fxAda.Rates;

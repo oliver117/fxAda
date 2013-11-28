@@ -1,7 +1,7 @@
 with Ada.Text_IO;
 with Ada.Exceptions;
 
-with fxAda;
+with fxAda.Rates;
 
 with Oanda_API;
 with Oanda_API.Rates;
@@ -11,14 +11,12 @@ procedure Rate_Streamer is
 
    task body Quote_Printer is
       Quote : Oanda_API.Rates.Quote;
-      Instr : constant Oanda_API.Instrument := (Identifier => Oanda_API.To_Identifier("AUD_USD"),
-                                                others => <>);
+      Instrument : constant Oanda_API.Instrument_T := Oanda_API.To_Instrument("AUD_USD");
    begin
       loop
-         Ada.Text_IO.Put_Line ("Waiting... ");
-         fxAda.Wait;
-         if fxAda.Has_Quote (Instr) then
-            Quote := fxAda.Quote (Instr);
+         fxAda.Rates.Wait;
+         if fxAda.Rates.Has_Quote (Instrument) then
+            Quote := fxAda.Rates.Quote (Instrument);
 
             Ada.Text_IO.Put_Line ("Bid: " & Oanda_API.Rate'Image (Quote.Bid));
          end if;
@@ -26,7 +24,6 @@ procedure Rate_Streamer is
    end Quote_Printer;
 
    Printer_1 : Quote_Printer;
-   Printer_2 : Quote_Printer;
 
 begin
    Ada.Text_IO.Put_Line ("Fetching Instrument List...");
@@ -35,15 +32,14 @@ begin
         Oanda_API.Rates.Get_Instruments (Oanda_API.Test_Account);
    begin
       Ada.Text_IO.Put_Line ("Starting fxAda...");
-      fxAda.Start (Interval => 1.0,
-                   Instruments => Instruments (Instruments'First .. Instruments'First + 1));
+      fxAda.Rates.Start (Interval => 1.0,
+                   Instruments => Instruments (Instruments'First + 6 .. Instruments'First + 6));
    end;
 
 exception
    when Error : others =>
       Ada.Text_IO.Put_Line ("Exception, Message: " & Ada.Exceptions.Exception_Message (Error));
       abort Printer_1;
-      abort Printer_2;
 
 
 end Rate_Streamer;
